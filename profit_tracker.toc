@@ -1,0 +1,8 @@
+## Interface: 40000
+## Title: Profit tracker
+## Notes: tracks the value of all items and profit on sales
+## SavedVariables: skill_spells
+## SavedVariablesPerCharacter: profit_tracker
+## Version: 0.01
+## OptionalDeps: TomTom
+profit_tracker.lua
