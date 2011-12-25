@@ -28,6 +28,10 @@ function do_tooltip(tipFrame,link,quantity) -- basics taken from tradeskillmaste
 		tooltip:SetColor(0.4,0.4,0.9)
 	end
 end
+local function log_change(msg)
+	if profit_tracker.log == nil then profit_tracker.log = {} end
+	table.insert(profit_tracker.log,msg)
+end
 function check_mailbox()
 	if profit_tracker.bags == nil then profit_tracker.bags = {} end
 	local money = GetMoney()
@@ -55,7 +59,10 @@ function check_mailbox()
 			profit_tracker.bags[''..itemid].count = profit_tracker.bags[''..itemid].count + count
 			profit_tracker.bags[''..itemid].value = profit_tracker.bags[''..itemid].value + buyout
 			TakeInboxItem(i,1)
+			log_change('AH_BUY|'..itemid..'|'..buyout..'|'..bid..'|'..itemName..'|'..playerName)
 			return
+		else
+			print(invoiceType)
 		end
 	end
 end
@@ -125,7 +132,7 @@ function scan_bags()
 		print(names[key]..' went down '..value..' worth '..(per_item * value))
 	end
 	local gain_count = 0
-	for key,value in pairs(gained) do gain_count = gain_count + 1 end -- FIXME
+	for key,value in pairs(gained) do gain_count = gain_count + 1 end -- FIXME #gained ??
 	print('gained '..gain_count..' seperate item types')
 	for key,value in pairs(gained) do
 		print(names[key]..' went up '..value..' worth '..(value_changing / gain_count))
