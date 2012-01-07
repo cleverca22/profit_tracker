@@ -48,25 +48,36 @@ function check_mailbox()
 			print(bid)
 			print(buyout)
 			print(count)
-			local itemid = strmatch(GetInboxItemLink(i,1),"item:(%d+)")
-			muckit(itemid)
-			if profit_tracker.bags[''..itemid] == nil then
-				profit_tracker.bags[''..itemid] = {}
-				profit_tracker.bags[''..itemid].count = 0
-				profit_tracker.bags[''..itemid].value = 0
+			local itemlink = GetInboxItemLink(i,1)
+			if itemlink ~= nil then
+				local itemid = strmatch(GetInboxItemLink(i,1),"item:(%d+)")
+				muckit(itemid)
+				if profit_tracker.bags[''..itemid] == nil then
+					profit_tracker.bags[''..itemid] = {}
+					profit_tracker.bags[''..itemid].count = 0
+					profit_tracker.bags[''..itemid].value = 0
+				end
+				if profit_tracker.bags[''..itemid].value == nil then profit_tracker.bags[''..itemid].value = 0 end
+				profit_tracker.bags[''..itemid].count = profit_tracker.bags[''..itemid].count + count
+				profit_tracker.bags[''..itemid].value = profit_tracker.bags[''..itemid].value + buyout
+				TakeInboxItem(i,1)
+				log_change('AH_BUY|'..itemid..'|'..buyout..'|'..bid..'|'..itemName..'|'..playerName..'|'..count)
+				return
 			end
-			if profit_tracker.bags[''..itemid].value == nil then profit_tracker.bags[''..itemid].value = 0 end
-			profit_tracker.bags[''..itemid].count = profit_tracker.bags[''..itemid].count + count
-			profit_tracker.bags[''..itemid].value = profit_tracker.bags[''..itemid].value + buyout
-			TakeInboxItem(i,1)
-			log_change('AH_BUY|'..itemid..'|'..buyout..'|'..bid..'|'..itemName..'|'..playerName)
+		elseif invoiceType == 'seller' then
+			log_change('AH_SALE|'..itemName..'|'..playerName..'|'..buyout..'|'..bid..'|'..count..'|'..deposit..'|'..consignment)
+			TakeInboxMoney(i)
 			return
-		else
+		elseif invoiceType then
 			print(invoiceType)
 		end
 	end
+	if MailAddonBusy == 'profit_tracker' then MailAddonBusy = nil end
+	print('nothing found, yeilding')
 end
 function scan_bags()
+	local lost_msg = {}
+	local gained_msg = {}
 	local temp = {}
 	local names = {}
 	for i = 0,4 do
@@ -94,14 +105,17 @@ function scan_bags()
 	local money_lost = 0
 	local lost = {}
 	local gained = {}
+	local value_changing = 0
 	if profit_tracker.money == nil then profit_tracker.money = money end
 	if profit_tracker.money == money then
 	else
 		print('money changed '..profit_tracker.money..' -> '..money..'('..(money - profit_tracker.money)..')')
+		money_lost = profit_tracker.money - money
 		profit_tracker.money = money
 	end
 	for key,value in pairs(temp) do
 		local entry = profit_tracker.bags[key]
+		entry.link = names[key]
 		if profit_tracker.bags[key] then -- item already tracked
 			if profit_tracker.bags[key].value == nil then profit_tracker.bags[key].value = 0 end
 			if profit_tracker.bags[key].count == value then -- no change
@@ -124,19 +138,33 @@ function scan_bags()
 		end
 		profit_tracker.bags[key].link = names[key]
 	end
-	local value_changing = 0
+	print('money lost: '..money_lost)
+
+	local gain_count = 0
+	local loss_count = 0
+
+	for key,value in pairs(gained) do gain_count = gain_count + 1 end
+	for key,value in pairs(lost) do loss_count = loss_count + 1 end
+
+	print('lost '..loss_count..' seperate items')
+	if (loss_count == 0) and (gain_count > 0) then
+		value_changing = money_lost
+	end
 	for key,value in pairs(lost) do
 		local per_item = profit_tracker.bags[key].value / (profit_tracker.bags[key].count + value)
 		value_changing = value_changing + (per_item * value)
 		profit_tracker.bags[key].value = profit_tracker.bags[key].value - (per_item * value)
 		print(names[key]..' went down '..value..' worth '..(per_item * value))
+		table.insert(lost_msg,key..','..value..','..per_item)
 	end
-	local gain_count = 0
-	for key,value in pairs(gained) do gain_count = gain_count + 1 end -- FIXME #gained ??
 	print('gained '..gain_count..' seperate item types')
 	for key,value in pairs(gained) do
 		print(names[key]..' went up '..value..' worth '..(value_changing / gain_count))
 		profit_tracker.bags[key].value = profit_tracker.bags[key].value + (value_changing / gain_count)
+		table.insert(gained_msg,key..','..value..','..(value_changing / gain_count/value))
+	end
+	if value_changing or gain_count or loss_count then
+		log_change('CRAFTING|'..table.concat(lost_msg,'/')..'|'..table.concat(gained_msg,'/')..'|'..value_changing..'|'..gain_count..'|'..loss_count)
 	end
 end
 local delay = nil
@@ -146,11 +174,18 @@ local function delay_scan()
 		main_frame:SetScript("OnUpdate",nil)
 		delay = nil
 		scan_bags()
+		if MailAddonBusy == 'profit_tracker' then
+			check_mailbox()
+		end
 	end
 end
 local function start_scan()
 	delay = 30
 	main_frame:SetScript("OnUpdate",delay_scan)
+end
+local function delay_mailbox()
+	main_frame:SetScript("OnUpdate",nil)
+	check_mailbox()
 end
 local function eventHandler(self,event,...)
 	local arg1,arg2,arg3 = ...
@@ -159,6 +194,17 @@ local function eventHandler(self,event,...)
 	elseif event == "LOOT_CLOSED" then
 		start_scan()
 		print(event)
+	elseif event == 'MAIL_SHOW' then
+		MailAddonBusy = 'profit_tracker'
+		check_mailbox()
+	elseif event == 'MAIL_INBOX_UPDATE' then
+		MailAddonBusy = 'profit_tracker'
+		main_frame:SetScript("OnUpdate",delay_mailbox)
+	elseif event == 'MAIL_CLOSED' then
+		if MailAddonBusy == 'profit_tracker' then
+			print('profit tracker interupted while scanning mailbox')
+			MailAddonBusy = nil
+		end
 	elseif event == "CHAT_MSG_LOOT" then
 		--scan_bags()
 		start_scan()
@@ -195,9 +241,9 @@ local function eventHandler(self,event,...)
 				end
 			end
 		else
-			print(spellid)
-			print(spell_name)
-			print(GetSpellInfo(spellid))
+			--print(spellid)
+			--print(spell_name)
+			--print(GetSpellInfo(spellid))
 		end
 	else
 		print(event)
@@ -214,6 +260,8 @@ local function profit_tracker_init()
 	frame:RegisterEvent("MAIL_SHOW")
 	frame:RegisterEvent("MAIL_INBOX_UPDATE")
 	frame:RegisterEvent("MAIL_CLOSED")
+	frame:RegisterEvent("PLAYER_MONEY")
+	frame:RegisterEvent("AUCTION_OWNED_LIST_UPDATE")
 	frame:SetScript("OnEvent",eventHandler)
 	main_frame = frame
 	tooltip:Activate()

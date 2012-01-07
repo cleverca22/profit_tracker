@@ -5,4 +5,5 @@
 ## SavedVariablesPerCharacter: profit_tracker
 ## Version: 0.01
 ## OptionalDeps: TomTom
+## Dependencies: TipHelper
 profit_tracker.lua
