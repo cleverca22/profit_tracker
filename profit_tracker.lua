@@ -80,9 +80,9 @@ end
 function scan_bags()
 	local lost_msg = {}
 	local gained_msg = {}
-	local temp = {}
+	local temp = {} -- all items currently held
 	local names = {}
-	for i = 0,4 do
+	for i = 0,4 do -- loop over bags and populate temp
 		local numSlots = GetContainerNumSlots(i)
 		for j = 1,numSlots do
 			local id = GetContainerItemID(i,j)
@@ -115,7 +115,7 @@ function scan_bags()
 		money_lost = profit_tracker.money - money
 		profit_tracker.money = money
 	end
-	for key,value in pairs(temp) do
+	for key,value in pairs(temp) do -- for each item in my bags, check db
 		local entry = profit_tracker.bags[key]
 		if profit_tracker.bags[key] then -- item already tracked
 			entry.link = names[key]
@@ -140,7 +140,22 @@ function scan_bags()
 		end
 		profit_tracker.bags[key].link = names[key]
 	end
-	print('money lost: '..money_lost)
+	for key,value in pairs(profit_tracker.bags) do -- for each item in db, check if its NOT in bags(temp)
+		local entry = temp[key]
+		if temp[key] then -- its fine, loop above got it
+		else
+			if profit_tracker.bags[key].count > 0 then
+				lost[key] = profit_tracker.bags[key].count
+				profit_tracker.bags[key].count = 0
+				print('lost all of '..profit_tracker.bags[key].link)
+			end
+		end
+	end
+	if money_lost > 0 then
+		print('money lost: '..money_lost)
+	else
+		print('money gained: '..(-1*money_lost))
+	end
 
 	local gain_count = 0
 	local loss_count = 0
@@ -156,6 +171,9 @@ function scan_bags()
 		local per_item = profit_tracker.bags[key].value / (profit_tracker.bags[key].count + value)
 		value_changing = value_changing + (per_item * value)
 		profit_tracker.bags[key].value = profit_tracker.bags[key].value - (per_item * value)
+
+		if (names[key] == nil) then names[key] = 'nameless #'..key end
+
 		print(names[key]..' went down '..value..' worth '..(per_item * value))
 		table.insert(lost_msg,key..','..value..','..per_item)
 	end
