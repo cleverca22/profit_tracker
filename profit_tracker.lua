@@ -65,8 +65,10 @@ function check_mailbox()
 				return
 			end
 		elseif invoiceType == 'seller' then
-			log_change('AH_SALE|'..itemName..'|'..playerName..'|'..buyout..'|'..bid..'|'..count..'|'..deposit..'|'..consignment)
+			local msg = 'AH_SALE|'..itemName..'|'..playerName..'|'..buyout..'|'..bid..'|'..count..'|'..deposit..'|'..consignment
+			print(msg)
 			TakeInboxMoney(i)
+			log_change(msg)
 			return
 		elseif invoiceType then
 			print(invoiceType)
@@ -115,8 +117,8 @@ function scan_bags()
 	end
 	for key,value in pairs(temp) do
 		local entry = profit_tracker.bags[key]
-		entry.link = names[key]
 		if profit_tracker.bags[key] then -- item already tracked
+			entry.link = names[key]
 			if profit_tracker.bags[key].value == nil then profit_tracker.bags[key].value = 0 end
 			if profit_tracker.bags[key].count == value then -- no change
 			else -- count changed
