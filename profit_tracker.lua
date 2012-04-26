@@ -147,6 +147,9 @@ function scan_bags()
 			if profit_tracker.bags[key].count > 0 then
 				lost[key] = profit_tracker.bags[key].count
 				profit_tracker.bags[key].count = 0
+				if profit_tracker.bags[key].link == nil then
+					profit_tracker.bags[key].link = 'nameless #'..key
+				end
 				print('lost all of '..profit_tracker.bags[key].link)
 			end
 		end
@@ -225,6 +228,7 @@ local function eventHandler(self,event,...)
 			print('profit tracker interupted while scanning mailbox')
 			MailAddonBusy = nil
 		end
+		scan_bags()
 	elseif event == "CHAT_MSG_LOOT" then
 		--scan_bags()
 		start_scan()
