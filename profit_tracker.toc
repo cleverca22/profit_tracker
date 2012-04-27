@@ -4,6 +4,6 @@
 ## SavedVariables: skill_spells
 ## SavedVariablesPerCharacter: profit_tracker
 ## Version: 0.01
-## OptionalDeps: TomTom
+## OptionalDeps: TomTom, TradeSkillMaster_Crafting
 ## Dependencies: TipHelper
 profit_tracker.lua
