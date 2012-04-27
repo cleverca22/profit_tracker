@@ -3,6 +3,12 @@ profit_tracker = {}
 local next_item = nil
 local tooltip = LibStub("nTipHelper:1")
 local main_frame
+local TSM
+if (LibStub) then
+	LibStub("AceAddon-3.0"):GetAddon("TradeSkillMaster_Crafting",true)
+else
+	TSM = nil
+end
 
 local function muckit(str)
 	local foo = gsub(str,"|","_")
@@ -179,16 +185,24 @@ function scan_bags()
 
 		print(names[key]..' went down '..value..' worth '..(per_item * value))
 		table.insert(lost_msg,key..','..value..','..per_item)
+		if (key == 54440) then update_dreamcloth(profit_tracker.bags[key].value / profit_tracker.bags[key].count) end
 	end
 	print('gained '..gain_count..' seperate item types')
 	for key,value in pairs(gained) do
 		print(names[key]..' went up '..value..' worth '..(value_changing / gain_count))
 		profit_tracker.bags[key].value = profit_tracker.bags[key].value + (value_changing / gain_count)
 		table.insert(gained_msg,key..','..value..','..(value_changing / gain_count/value))
+		if (key == 54440) then update_dreamcloth(profit_tracker.bags[key].value / profit_tracker.bags[key].count) end
 	end
 	if value_changing or gain_count or loss_count then
 		log_change('CRAFTING|'..table.concat(lost_msg,'/')..'|'..table.concat(gained_msg,'/')..'|'..value_changing..'|'..gain_count..'|'..loss_count)
 	end
+end
+local function update_dreamcloth(price)
+	if (TSM == nil) then return end
+	local dreamcloth = TSM.Data.Tailoring.mats[54440]
+	dreamcloth.customValue = price
+	dreamcloth.source = 'custom'
 end
 local delay = nil
 local function delay_scan()
