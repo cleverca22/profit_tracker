@@ -16,7 +16,13 @@ local function dump_table(t)
 		print(key .. '=' .. value)
 	end
 end
-function do_tooltip(tipFrame,link,quantity) -- basics taken from tradeskillmaster TSM:LoadTooltip
+local function money(money_in)
+	local copper = floor(money_in % 100)
+	local silver = floor(money_in/100) % 100
+	local gold = floor(money_in/10000)
+	return gold..'g'..silver..'s'..copper..'c'
+end
+local function do_tooltip(tipFrame,link,quantity) -- basics taken from tradeskillmaster TSM:LoadTooltip
 	local itemID = strmatch(link,"item:(%d+)")
 	if not itemID then return end
 
@@ -27,7 +33,9 @@ function do_tooltip(tipFrame,link,quantity) -- basics taken from tradeskillmaste
 		tooltip:SetFrame(tipFrame)
 		tooltip:AddLine(" ", nil, true)
 		tooltip:SetColor(1,1,0)
-		tooltip:AddLine('Profit Tracker count: '..info.count..' value: '..floor(abs(info.value/10000))..'g each: '..(floor(abs((info.value/info.count)/10000))..'g'),nil,true)
+		local each = info.value/info.count
+		tooltip:AddLine('Profit Tracker count: '..info.count..' value: '..money(info.value)..' each: '..money(each),nil,true)
+		if (quantity) then tooltip:AddLine(quantity..' are worth '..money(each*quantity),nil,true); end
 		tooltip:SetColor(0.4,0.4,0.9)
 	end
 end
@@ -150,17 +158,16 @@ function scan_bags()
 			if profit_tracker.bags[key].count > 0 then
 				lost[key] = profit_tracker.bags[key].count
 				profit_tracker.bags[key].count = 0
-				if profit_tracker.bags[key].link == nil then
-					profit_tracker.bags[key].link = 'nameless #'..key
-				end
-				print('lost all of '..profit_tracker.bags[key].link)
+				print('lost all of '..get_link(key))
 			end
 		end
 	end
 	if money_lost > 0 then
 		print('money lost: '..money_lost)
 	else
-		print('money gained: '..(-1*money_lost))
+		if money_lost < 0 then
+			print('money gained: '..(-1*money_lost))
+		end
 	end
 
 	local gain_count = 0
@@ -169,7 +176,7 @@ function scan_bags()
 	for key,value in pairs(gained) do gain_count = gain_count + 1 end
 	for key,value in pairs(lost) do loss_count = loss_count + 1 end
 
-	print('lost '..loss_count..' seperate items')
+	if (loss_count > 0) then print('lost '..loss_count..' seperate items') end
 	if (loss_count == 0) and (gain_count > 0) then
 		value_changing = money_lost
 	end
@@ -178,13 +185,11 @@ function scan_bags()
 		value_changing = value_changing + (per_item * value)
 		profit_tracker.bags[key].value = profit_tracker.bags[key].value - (per_item * value)
 
-		if (names[key] == nil) then names[key] = 'nameless #'..key end
-
-		print(names[key]..' went down '..value..' worth '..(per_item * value))
+		print(get_link(key)..' went down '..value..' worth '..(per_item * value))
 		table.insert(lost_msg,key..','..value..','..per_item)
 		if (key == 54440) then update_dreamcloth(profit_tracker.bags[key].value / profit_tracker.bags[key].count) end
 	end
-	print('gained '..gain_count..' seperate item types')
+	if (gain_count > 0) then print('gained '..gain_count..' seperate item types') end
 	for key,value in pairs(gained) do
 		print(names[key]..' went up '..value..' worth '..(value_changing / gain_count))
 		profit_tracker.bags[key].value = profit_tracker.bags[key].value + (value_changing / gain_count)
@@ -194,6 +199,10 @@ function scan_bags()
 	if value_changing or gain_count or loss_count then
 		log_change('CRAFTING|'..table.concat(lost_msg,'/')..'|'..table.concat(gained_msg,'/')..'|'..value_changing..'|'..gain_count..'|'..loss_count)
 	end
+end
+local function get_link(itemid)
+	if (profit_tracker.bags[itemid].link == nil) then profit_tracker.bags[key].itemid = 'nameless #'..itemid end
+	return profit_tracker.bags[itemid].link
 end
 local function update_dreamcloth(price)
 	if (TSM == nil) then return end
