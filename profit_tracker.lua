@@ -126,7 +126,6 @@ function scan_bags()
 	if profit_tracker.money == nil then profit_tracker.money = money end
 	if profit_tracker.money == money then
 	else
-		print('money changed '..profit_tracker.money..' -> '..money..'('..(money - profit_tracker.money)..')')
 		money_lost = profit_tracker.money - money
 		profit_tracker.money = money
 	end
@@ -170,7 +169,7 @@ function scan_bags()
 		print('money lost: '..money_lost)
 	else
 		if money_lost < 0 then
-			print('money gained: '..(-1*money_lost))
+			print('money gained: '..money(-1*money_lost))
 		end
 	end
 
