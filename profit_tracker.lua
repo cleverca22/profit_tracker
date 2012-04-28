@@ -118,16 +118,16 @@ function scan_bags()
 		end
 	end
 	if profit_tracker.bags == nil then profit_tracker.bags = {} end
-	local money = GetMoney()
+	local cur_money = GetMoney()
 	local money_lost = 0
 	local lost = {}
 	local gained = {}
 	local value_changing = 0
-	if profit_tracker.money == nil then profit_tracker.money = money end
-	if profit_tracker.money == money then
+	if profit_tracker.money == nil then profit_tracker.money = cur_money end
+	if profit_tracker.money == cur_money then
 	else
-		money_lost = profit_tracker.money - money
-		profit_tracker.money = money
+		money_lost = profit_tracker.money - cur_money
+		profit_tracker.money = cur_money
 	end
 	for key,value in pairs(temp) do -- for each item in my bags, check db
 		local entry = profit_tracker.bags[key]
