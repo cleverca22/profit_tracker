@@ -11,6 +11,10 @@ local function muckit(str)
 	local foo = gsub(str,"|","_")
 	print(foo)
 end
+local function get_link(itemid)
+	if (profit_tracker.bags[itemid].link == nil) then profit_tracker.bags[key].itemid = 'nameless #'..itemid end
+	return profit_tracker.bags[itemid].link
+end
 local function dump_table(t)
 	for key,value in pairs(t) do
 		print(key .. '=' .. value)
@@ -199,10 +203,6 @@ function scan_bags()
 	if value_changing or gain_count or loss_count then
 		log_change('CRAFTING|'..table.concat(lost_msg,'/')..'|'..table.concat(gained_msg,'/')..'|'..value_changing..'|'..gain_count..'|'..loss_count)
 	end
-end
-local function get_link(itemid)
-	if (profit_tracker.bags[itemid].link == nil) then profit_tracker.bags[key].itemid = 'nameless #'..itemid end
-	return profit_tracker.bags[itemid].link
 end
 local function update_dreamcloth(price)
 	if (TSM == nil) then return end
