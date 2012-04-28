@@ -3,7 +3,9 @@ profit_tracker = {}
 local next_item = nil
 local tooltip = LibStub("nTipHelper:1")
 local main_frame
-local TSM = LibStub("AceAddon-3.0"):GetAddon("TradeSkillMaster_Crafting",true)
+local AceAddon = LibStub("AceAddon-3.0",true);
+local TSM
+if AceAddon then TSM = AceAddon:GetAddon("TradeSkillMaster_Crafting",true) end
 
 local function muckit(str)
 	local foo = gsub(str,"|","_")

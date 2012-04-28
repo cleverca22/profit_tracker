@@ -5,5 +5,5 @@
 ## SavedVariablesPerCharacter: profit_tracker
 ## Version: 0.01
 ## OptionalDeps: TomTom, TradeSkillMaster_Crafting
-## Dependencies: TipHelper
+## Dependencies: TipHelper, LibExtraTip
 profit_tracker.lua
