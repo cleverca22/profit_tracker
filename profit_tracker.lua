@@ -136,7 +136,6 @@ function scan_bags()
 			if profit_tracker.bags[key].value == nil then profit_tracker.bags[key].value = 0 end
 			if profit_tracker.bags[key].count == value then -- no change
 			else -- count changed
-				print('item '..entry.link..' changed count, '..profit_tracker.bags[key].count..' -> '..value)
 				local change = value - profit_tracker.bags[key].count
 				if change > 0 then -- gain
 					gained[key] = change
@@ -166,7 +165,7 @@ function scan_bags()
 		end
 	end
 	if money_lost > 0 then
-		print('money lost: '..money_lost)
+		print('money lost: '..money(money_lost))
 	else
 		if money_lost < 0 then
 			print('money gained: '..money(-1*money_lost))
@@ -180,9 +179,7 @@ function scan_bags()
 	for key,value in pairs(lost) do loss_count = loss_count + 1 end
 
 	if (loss_count > 0) then print('lost '..loss_count..' seperate items') end
-	if (loss_count == 0) and (gain_count > 0) then
-		value_changing = money_lost
-	end
+	if loss_count == 0 and gain_count > 0 and money_lost > 0 then value_changing = money_lost end -- i lost no items, gained some items, and lost money
 	for key,value in pairs(lost) do
 		local per_item = profit_tracker.bags[key].value / (profit_tracker.bags[key].count + value)
 		value_changing = value_changing + (per_item * value)
@@ -194,10 +191,21 @@ function scan_bags()
 	end
 	if (gain_count > 0) then print('gained '..gain_count..' seperate item types') end
 	for key,value in pairs(gained) do
-		print(names[key]..' went up '..value..' worth '..(value_changing / gain_count))
+		print(names[key]..' went up '..value..' worth '..money(value_changing / gain_count))
 		profit_tracker.bags[key].value = profit_tracker.bags[key].value + (value_changing / gain_count)
 		table.insert(gained_msg,key..','..value..','..(value_changing / gain_count/value))
 		if (key == 54440) then update_dreamcloth(profit_tracker.bags[key].value / profit_tracker.bags[key].count) end
+	end
+	if gain_count == 0 and value_changing > 0 then
+		print('value changing '..money(value_changing))
+		local change = (money_lost * -1) - value_changing
+		if change > 0 then
+			print('PROFIT!!! '..money(change))
+		else
+			if change < 0 then
+				print('loss:( '..money(change*-1))
+			end
+		end
 	end
 	if value_changing or gain_count or loss_count then
 		log_change('CRAFTING|'..table.concat(lost_msg,'/')..'|'..table.concat(gained_msg,'/')..'|'..value_changing..'|'..gain_count..'|'..loss_count)
