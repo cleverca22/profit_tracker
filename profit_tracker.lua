@@ -228,6 +228,17 @@ local function delay_scan()
 		end
 	end
 end
+local function rescan_ah()
+	local count = GetNumAuctionItems('owner')
+	print(count..' auctions found')
+	local i
+	for i = 1,count do
+		name, texture, count, quality, canUse, level, levelColHeader, minBid, minIncrement, buyoutPrice, bidAmount, highBidder, owner, saleStatus, itemId, hasAllInfo = GetAuctionItemInfo('owner',i)
+		if name then
+			print(i..' '..name)
+		end
+	end
+end
 local function start_scan()
 	delay = 30
 	main_frame:SetScript("OnUpdate",delay_scan)
@@ -295,6 +306,8 @@ local function eventHandler(self,event,...)
 			--print(spell_name)
 			--print(GetSpellInfo(spellid))
 		end
+	elseif event == "AUCTION_OWNED_LIST_UPDATE" then
+		rescan_ah()
 	else
 		print(event)
 	end
