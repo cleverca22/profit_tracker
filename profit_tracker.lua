@@ -90,7 +90,6 @@ function check_mailbox()
 		end
 	end
 	if MailAddonBusy == 'profit_tracker' then MailAddonBusy = nil end
-	print('nothing found, yeilding')
 end
 function scan_bags()
 	local lost_msg = {}
@@ -185,7 +184,7 @@ function scan_bags()
 		value_changing = value_changing + (per_item * value)
 		profit_tracker.bags[key].value = profit_tracker.bags[key].value - (per_item * value)
 
-		print(get_link(key)..' went down '..value..' worth '..(per_item * value))
+		print(get_link(key)..' went down '..value..' worth '..money(per_item * value))
 		table.insert(lost_msg,key..','..value..','..per_item)
 		if (key == 54440) then update_dreamcloth(profit_tracker.bags[key].value / profit_tracker.bags[key].count) end
 	end
