@@ -209,6 +209,15 @@ function scan_bags()
 		log_change('CRAFTING|'..table.concat(lost_msg,'/')..'|'..table.concat(gained_msg,'/')..'|'..value_changing..'|'..gain_count..'|'..loss_count)
 	end
 end
+function show_assets()
+	local count = 0
+	local value = 0
+	for key,item in pairs(profit_tracker.bags) do
+		count = count + item.count
+		value = value + item.value
+	end
+	print(count..' items totaling '..money(value))
+end
 local function update_dreamcloth(price)
 	if (TSM == nil) then return end
 	local dreamcloth = TSM.Data.Tailoring.mats[54440]
