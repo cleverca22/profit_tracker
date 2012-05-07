@@ -159,7 +159,6 @@ function scan_bags()
 			if profit_tracker.bags[key].count > 0 then
 				lost[key] = profit_tracker.bags[key].count
 				profit_tracker.bags[key].count = 0
-				print('lost all of '..get_link(key))
 			end
 		end
 	end
