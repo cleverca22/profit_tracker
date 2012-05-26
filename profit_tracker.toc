@@ -3,7 +3,7 @@
 ## Notes: tracks the value of all items and profit on sales
 ## SavedVariables: skill_spells
 ## SavedVariablesPerCharacter: profit_tracker
-## Version: 0.01
+## Version: 0.02
 ## OptionalDeps: TomTom, TradeSkillMaster_Crafting
 TipHelper/Load.xml
 LibExtraTip/Load.xml
